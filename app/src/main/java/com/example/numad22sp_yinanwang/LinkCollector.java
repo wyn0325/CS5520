@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -52,7 +53,7 @@ public class LinkCollector extends AppCompatActivity {
                         new DialogInterface.OnClickListener()
                         {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                LinkCollector.this.finish();
+                                finish();
                             }
                         })
                 .setPositiveButton("Add",
