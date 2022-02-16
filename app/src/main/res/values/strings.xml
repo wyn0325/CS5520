@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">NUMAD22SP_yinanwang</string>
+    <string name="link_name">Item name</string>
+    <string name="link_url">Description</string>
 </resources>
