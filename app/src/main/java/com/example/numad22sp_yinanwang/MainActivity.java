@@ -8,6 +8,8 @@ import android.widget.Button;
 import android.widget.Toast;
 import android.content.Intent;
 
+import com.google.android.material.snackbar.Snackbar;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -18,7 +20,8 @@ public class MainActivity extends AppCompatActivity {
         about.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Yinan Wang, wang.yinan3@northeastern.edu", Toast.LENGTH_SHORT).show();
+                Snackbar snackbar = Snackbar.make(v,"Yinan Wang \nwang.yinan3@northeastern.edu",Snackbar.LENGTH_SHORT);
+                snackbar.show();
             }
         });
 

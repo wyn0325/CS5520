@@ -53,7 +53,7 @@ public class LinkCollector extends AppCompatActivity {
                         new DialogInterface.OnClickListener()
                         {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                finish();
+                                dialog.dismiss();
                             }
                         })
                 .setPositiveButton("Add",
