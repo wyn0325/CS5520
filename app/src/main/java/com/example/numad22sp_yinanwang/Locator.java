@@ -39,22 +39,6 @@ public class Locator extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.locator);
 
-        //location manager
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        //provider
-        List<String> providers = locationManager.getProviders(true);
-
-        if (providers.contains(LocationManager.GPS_PROVIDER)) {
-            locationProvider = LocationManager.GPS_PROVIDER;
-        } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-            locationProvider = LocationManager.NETWORK_PROVIDER;
-        }else {
-            Toast.makeText(this, "No Avaliable Locator", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        //get permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -62,13 +46,28 @@ public class Locator extends AppCompatActivity {
             //request
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, 0);
+        }
+
+
+        //location manager
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        //provider
+        List<String> providers = locationManager.getProviders(true);
+
+        if (providers.contains(LocationManager.GPS_PROVIDER)) {
+            locationProvider = LocationManager.GPS_PROVIDER;
+        } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
+            locationProvider = LocationManager.NETWORK_PROVIDER;
         } else {
-            //get location
-            locationManager.requestLocationUpdates(locationProvider, 100, 1,locationListener);
-            Location location = locationManager.getLastKnownLocation(locationProvider);
-            if (location!=null){
-                changeLocation(location);
-            }
+            Toast.makeText(this, "No Avaliable Locator", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //get location
+        locationManager.requestLocationUpdates(locationProvider, 100, 1, locationListener);
+        Location location = locationManager.getLastKnownLocation(locationProvider);
+        if (location != null) {
+            changeLocation(location);
         }
     }
 
