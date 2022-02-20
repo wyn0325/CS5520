@@ -42,6 +42,17 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        Button locator = (Button) findViewById(R.id.locator);
+        locator.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,Locator.class);
+                startActivity(intent);
+            }
+        });
     }
+
+
 
 }
