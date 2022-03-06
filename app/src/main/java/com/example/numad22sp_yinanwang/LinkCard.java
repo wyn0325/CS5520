@@ -31,3 +31,4 @@ public class LinkCard implements LinkClickListener {
 
 
 }
+

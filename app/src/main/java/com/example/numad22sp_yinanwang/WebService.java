@@ -1,33 +1,21 @@
 package com.example.numad22sp_yinanwang;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.EditText;
-import android.app.AlertDialog;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,7 +27,6 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 
 public class WebService extends AppCompatActivity {
@@ -53,60 +40,33 @@ public class WebService extends AppCompatActivity {
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
 
+    private Handler handler=new Handler();
+    private int mProgress = 0;
+    private ProgressBar progressBar;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.webservice);
+    private class MultiThread extends Thread{
 
-        init(savedInstanceState);
-
-        Button webservice = (Button) findViewById(R.id.ping);
-        webservice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PingWebServiceTask task = new PingWebServiceTask();
-                try {
-                    String mealDB="https://www.themealdb.com/api/json/v1/1/filter.php?a=Canadian";
-                    String url = NetworkUtil.validInput(mealDB);
-                    task.execute(url); // This is a security risk.  Don't let your user enter the URL in a real app.
-                } catch (NetworkUtil.MyException e) {
-                    Toast.makeText(getApplication(),e.toString(),Toast.LENGTH_SHORT).show();
-                }
+        @Override
+        public void run(){
+            while(mProgress<100){
+                mProgress++;
+                android.os.SystemClock.sleep(10);
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setProgress(mProgress);//refresh UI
+                    }
+                });
             }
-        });
-
-    }
-
-    private void init(Bundle savedInstanceState) {
-        initialItemData(savedInstanceState);
-        createRecyclerView();
-    }
-
-    // Google is deprecating Android AsyncTask API in Android 11 and suggesting to use java.util.concurrent
-    // But it is still important to learn&manage how it works
-    private class PingWebServiceTask  extends AsyncTask<String, Integer, String> {
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            Log.i(TAG, "Making progress...");
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            JSONObject jObject = new JSONObject();
             try {
-
-                URL url = new URL(params[0]);
+                String mealDB="https://www.themealdb.com/api/json/v1/1/filter.php?a=Canadian";
+                URL url = new URL(mealDB);
                 // Get String response from the url address
                 String resp = NetworkUtil.httpResponse(url);
                 //Log.i("resp",resp);
-
-                // JSONArray jArray = new JSONArray(resp);    // Use this if your web service returns an array of objects.  Arrays are in [ ] brackets.
+                JSONObject jObject = new JSONObject();
                 // Transform String into JSONObject
                 jObject = new JSONObject(resp);
-
                 JSONArray jsonArray = jObject.getJSONArray("meals");
                 //Log.i("resp",jsonArray.getString(0));
                 for(int i=0;i<jsonArray.length();i++){
@@ -119,9 +79,15 @@ public class WebService extends AppCompatActivity {
                     serviceList.add(serviceCard);
                 }
 
+                handler.post(new Runnable() {
+                                 @Override
+                                 public void run() {
+                                     progressBar.setVisibility(View.INVISIBLE);
+                                     createRecyclerView();//更新UI
+                                 }
+                             });
                 //Log.i("jTitle",jObject.getString("title"));
                 //Log.i("jBody",jObject.getString("body"));
-                return null;
 
             } catch (MalformedURLException e) {
                 Log.e(TAG,"MalformedURLException");
@@ -136,16 +102,37 @@ public class WebService extends AppCompatActivity {
                 Log.e(TAG,"JSONException");
                 e.printStackTrace();
             }
-
-            return null;
         }
+    }
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
 
-            createRecyclerView();
-        }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.webservice);
+        init(savedInstanceState);
+
+        Button webservice = (Button) findViewById(R.id.ping);
+        webservice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                progressBar=(ProgressBar) findViewById(R.id.progress);
+                progressBar.setVisibility(View.VISIBLE);
+                MultiThread mt = new MultiThread();
+                Thread mt1 = new Thread(mt, "Service");
+                mt.start();
+                createRecyclerView();
+                //sviewAdapter = new SviewAdapter(serviceList);
+                //recyclerView.setAdapter(sviewAdapter);
+            }
+        });
+
+    }
+
+
+    private void init(Bundle savedInstanceState) {
+        initialItemData(savedInstanceState);
+        createRecyclerView();
     }
 
 
@@ -183,6 +170,7 @@ public class WebService extends AppCompatActivity {
 
     }
 
+
     private void createRecyclerView() {
         rLayoutManger = new LinearLayoutManager(this);
         recyclerView = findViewById(R.id.service_view);
@@ -191,9 +179,8 @@ public class WebService extends AppCompatActivity {
         sviewAdapter = new SviewAdapter(serviceList);
         recyclerView.setAdapter(sviewAdapter);
         recyclerView.setLayoutManager(rLayoutManger);
-
-
     }
+
 
     static class SviewAdapter extends RecyclerView.Adapter<SviewHolder> {
 
@@ -203,10 +190,6 @@ public class WebService extends AppCompatActivity {
         //Constructor
         public SviewAdapter(ArrayList<ServiceCard> itemList) {
             this.itemList = itemList;
-        }
-
-        public void setOnItemClickListener(LinkClickListener listener) {
-            this.listener = listener;
         }
 
         @Override
@@ -223,7 +206,6 @@ public class WebService extends AppCompatActivity {
             holder.itemID.setText(currentItem.getServiceID());
             holder.itemName.setText(currentItem.getServiceName());
 
-
         }
 
         @Override
@@ -231,6 +213,7 @@ public class WebService extends AppCompatActivity {
             return itemList.size();
         }
     }
+
 
     static class SviewHolder extends RecyclerView.ViewHolder {
         public ImageView itemImg;
@@ -242,7 +225,6 @@ public class WebService extends AppCompatActivity {
             itemImg = itemView.findViewById(R.id.item_icon);
             itemID = itemView.findViewById(R.id.item_id);
             itemName = itemView.findViewById(R.id.item_name);
-
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -256,13 +238,12 @@ public class WebService extends AppCompatActivity {
                     }
                 }
             });
-
         }
     }
 
+
     public Bitmap getInternetPicture(String UrlPath) {
         Bitmap bm = null;
-
         String urlpath = UrlPath;
 
         try {
@@ -274,15 +255,10 @@ public class WebService extends AppCompatActivity {
             connection.setConnectTimeout(5000);
             connection.connect();
 
-
             if (connection.getResponseCode() == 200) {
                 InputStream is = connection.getInputStream();
                 bm = BitmapFactory.decodeStream(is);
-
-                //Log.i("", "网络请求成功");
-
             } else {
-                //Log.v("tag", "网络请求失败");
                 bm = null;
             }
         } catch (MalformedURLException e) {
@@ -291,6 +267,7 @@ public class WebService extends AppCompatActivity {
             e.printStackTrace();
         }
         return bm;
-
     }
+
+
 }

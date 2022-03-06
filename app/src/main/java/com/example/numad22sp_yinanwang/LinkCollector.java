@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.EditText;
 import android.app.AlertDialog;
@@ -36,6 +38,7 @@ public class LinkCollector extends AppCompatActivity {
 
     private static final String KEY_OF_INSTANCE = "KEY_OF_INSTANCE";
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
+
 
     protected void dialog(){
         final EditText linkName=new EditText(this);
@@ -114,7 +117,6 @@ public class LinkCollector extends AppCompatActivity {
         });
         itemTouchHelper.attachToRecyclerView(recyclerView);
     }
-
 
     // Handling Orientation Changes on Android
     @Override
@@ -203,4 +205,65 @@ public class LinkCollector extends AppCompatActivity {
 
 
     }
+
+    public class RviewAdapter extends RecyclerView.Adapter<RviewHolder> {
+
+        private final ArrayList<LinkCard> itemList;
+        private LinkClickListener listener;
+
+        //Constructor
+        public RviewAdapter(ArrayList<LinkCard> itemList) {
+            this.itemList = itemList;
+        }
+
+        public void setOnItemClickListener(LinkClickListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public RviewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_card, parent, false);
+            return new RviewHolder(view, listener);
+        }
+
+        @Override
+        public void onBindViewHolder(RviewHolder holder, int position) {
+            LinkCard currentItem = itemList.get(position);
+
+            holder.itemName.setText(currentItem.getLinkName());
+            holder.itemDesc.setText(currentItem.getLinkUrl());
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return itemList.size();
+        }
+    }
+
+    public class RviewHolder extends RecyclerView.ViewHolder {
+        public TextView itemName;
+        public TextView itemDesc;
+
+        public RviewHolder(View itemView, final LinkClickListener listener) {
+            super(itemView);
+            itemName = itemView.findViewById(R.id.link_name);
+            itemDesc = itemView.findViewById(R.id.link_url);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (listener != null) {
+                        int position = getLayoutPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+
+                            listener.onLinkClick(position);
+                        }
+                    }
+                }
+            });
+
+        }
+    }
+
 }

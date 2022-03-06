@@ -59,7 +59,7 @@ public final class NetworkUtil {
         // Read response.
         InputStream inputStream = conn.getInputStream();
         String resp = NetworkUtil.convertStreamToString(inputStream);
-
+        conn.disconnect();
         return resp;
     }
 
