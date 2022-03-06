@@ -42,3 +42,4 @@ public class RviewAdapter extends RecyclerView.Adapter<RviewHolder> {
         return itemList.size();
     }
 }
+

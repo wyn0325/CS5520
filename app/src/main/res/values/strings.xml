@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">NUMAD22SP_yinanwang</string>
-    <string name="link_name">Item name</string>
-    <string name="link_url">Description</string>
+    <string name="item_name">Item name</string>
+    <string name="item_url">Item url</string>
+    <string name="item_id">ID</string>
+    <string name="item_img">Image</string>
 </resources>

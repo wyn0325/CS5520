@@ -40,12 +40,9 @@ public class LinkCollector extends AppCompatActivity {
     protected void dialog(){
         final EditText linkName=new EditText(this);
         final EditText linkUrl=new EditText(this);
-        Pattern pattern;
 
         LayoutInflater factory = LayoutInflater.from(LinkCollector.this);
-        //得到自定义对话框
         final View DialogView = factory.inflate(R.layout.dialog, null);
-        //创建对话框
         AlertDialog dlg = new AlertDialog.Builder(LinkCollector.this)
                 .setTitle("Input Url")
                 .setView(DialogView)
@@ -78,8 +75,8 @@ public class LinkCollector extends AppCompatActivity {
 
                             }
                         })
-                .create();//创建弹出框
-        dlg.show();//显示
+                .create();
+        dlg.show();
 
     }
 
