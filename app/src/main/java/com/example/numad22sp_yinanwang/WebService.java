@@ -6,16 +6,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,14 +47,16 @@ public class WebService extends AppCompatActivity {
     private static final String NUMBER_OF_ITEMS = "NUMBER_OF_ITEMS";
 
     private Handler handler=new Handler();
-    private int mProgress = 0;
+    private int mProgress;
     private ProgressBar progressBar;
+    private String input=null;
 
     private class MultiThread extends Thread{
 
         @Override
         public void run(){
-            while(mProgress<100){
+            mProgress=0;
+            while(mProgress<90){
                 mProgress++;
                 android.os.SystemClock.sleep(10);
                 handler.post(new Runnable() {
@@ -59,7 +67,8 @@ public class WebService extends AppCompatActivity {
                 });
             }
             try {
-                String mealDB="https://www.themealdb.com/api/json/v1/1/filter.php?a=Canadian";
+                serviceList = new ArrayList<>();
+                String mealDB = "https://www.themealdb.com/api/json/v1/1/filter.php?a=" + input;
                 URL url = new URL(mealDB);
                 // Get String response from the url address
                 String resp = NetworkUtil.httpResponse(url);
@@ -78,17 +87,9 @@ public class WebService extends AppCompatActivity {
                     ServiceCard serviceCard = new ServiceCard(bm,serviceID,serviceName);
                     serviceList.add(serviceCard);
                 }
-
-                handler.post(new Runnable() {
-                                 @Override
-                                 public void run() {
-                                     progressBar.setVisibility(View.INVISIBLE);
-                                     createRecyclerView();//更新UI
-                                 }
-                             });
+                progressBar.setProgress(100);
                 //Log.i("jTitle",jObject.getString("title"));
                 //Log.i("jBody",jObject.getString("body"));
-
             } catch (MalformedURLException e) {
                 Log.e(TAG,"MalformedURLException");
                 e.printStackTrace();
@@ -101,7 +102,22 @@ public class WebService extends AppCompatActivity {
             } catch (JSONException e) {
                 Log.e(TAG,"JSONException");
                 e.printStackTrace();
+                progressBar.setVisibility(View.INVISIBLE);
+                Looper.prepare();
+                Toast toast= Toast.makeText(getApplicationContext(), "No data in this area", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER,0,0);
+                toast.show();
+                Looper.loop();
             }
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    recyclerView.setBackgroundColor(Color.DKGRAY);
+                    createRecyclerView();
+                    input=null;
+                }
+            });
         }
     }
 
@@ -112,18 +128,29 @@ public class WebService extends AppCompatActivity {
         setContentView(R.layout.webservice);
         init(savedInstanceState);
 
+
+
         Button webservice = (Button) findViewById(R.id.ping);
         webservice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar=(ProgressBar) findViewById(R.id.progress);
-                progressBar.setVisibility(View.VISIBLE);
-                MultiThread mt = new MultiThread();
-                Thread mt1 = new Thread(mt, "Service");
-                mt.start();
-                createRecyclerView();
-                //sviewAdapter = new SviewAdapter(serviceList);
-                //recyclerView.setAdapter(sviewAdapter);
+                EditText et = (EditText) findViewById(R.id.input);
+                input = et.getText().toString();
+                if(input.length()==0){
+                    Toast toast= Toast.makeText(getApplicationContext(), "Please input an area", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.CENTER,0,0);
+                    toast.show();
+                }
+                else{
+                    progressBar=(ProgressBar) findViewById(R.id.progress);
+                    progressBar.setVisibility(View.VISIBLE);
+                    MultiThread mt = new MultiThread();
+                    Thread mt1 = new Thread(mt, "Service");
+                    mt.start();
+                    createRecyclerView();
+                    //sviewAdapter = new SviewAdapter(serviceList);
+                    //recyclerView.setAdapter(sviewAdapter);
+                }
             }
         });
 
